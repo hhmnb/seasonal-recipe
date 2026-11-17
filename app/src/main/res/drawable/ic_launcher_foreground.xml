@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 节气食养 · 自适应图标前景：宣纸白细环 + 二十四刻度 + 新芽 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- 外环 -->
+    <path
+        android:pathData="M54,26 A28,28 0 1 1 54,82 A28,28 0 1 1 54,26 Z"
+        android:strokeColor="#F4EFE3"
+        android:strokeWidth="2.0"
+        android:strokeAlpha="0.85"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- 二十四节气刻度 -->
+    <path
+        android:pathData="M54.00,31.80L54.00,28.60M59.75,32.56L60.57,29.47M65.10,34.77L66.70,32.00M69.70,38.30L71.96,36.04M73.23,42.90L76.00,41.30M75.44,48.25L78.53,47.43M76.20,54.00L79.40,54.00M75.44,59.75L78.53,60.57M73.23,65.10L76.00,66.70M69.70,69.70L71.96,71.96M65.10,73.23L66.70,76.00M59.75,75.44L60.57,78.53M54.00,76.20L54.00,79.40M48.25,75.44L47.43,78.53M42.90,73.23L41.30,76.00M38.30,69.70L36.04,71.96M34.77,65.10L32.00,66.70M32.56,59.75L29.47,60.57M31.80,54.00L28.60,54.00M32.56,48.25L29.47,47.43M34.77,42.90L32.00,41.30M38.30,38.30L36.04,36.04M42.90,34.77L41.30,32.00M48.25,32.56L47.43,29.47"
+        android:strokeColor="#F4EFE3"
+        android:strokeWidth="1.1"
+        android:strokeAlpha="0.45"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- 新芽：茎 -->
+    <path
+        android:pathData="M54,70 C54,63 54,57 54,50"
+        android:strokeColor="#F4EFE3"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:fillColor="@android:color/transparent" />
+
+    <!-- 新芽：左叶 -->
+    <path
+        android:pathData="M54,56 C47.2,55.4 43.4,50.6 44.2,43.8 C50.8,43.6 54.6,48.4 54,55 Z"
+        android:fillColor="#F4EFE3"
+        android:fillAlpha="0.92" />
+
+    <!-- 新芽：右叶 -->
+    <path
+        android:pathData="M54,51 C60.6,50.2 64.4,45.4 63.6,38.6 C57,38.4 53.2,43.2 53.8,49.8 Z"
+        android:fillColor="#F4EFE3"
+        android:fillAlpha="0.72" />
+</vector>
