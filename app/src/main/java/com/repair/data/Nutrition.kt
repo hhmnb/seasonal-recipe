@@ -143,6 +143,8 @@ val NUTRI: Map<String, Nutri> = mapOf(
     "猪肉" to Nutri(purine = 138, extra = "含馅料、肉末"),
     "老鸭" to Nutri(purine = 88, extra = "按烧鸭（熟）计，生鸭肉更高"),
     "虾仁" to Nutri(purine = 187, extra = "按基围虾（生）计"),
+    "豆腐" to Nutri(purine = 68, extra = "石膏点的南豆腐；卤水豆腐略高"),
+    "豆干" to Nutri(purine = 94, extra = "按香干计"),
     "香干" to Nutri(purine = 94, extra = "按干豆腐（南豆腐）计"),
     "猪里脊" to Nutri(purine = 138),
     "瘦猪肉" to Nutri(purine = 138),

@@ -53,7 +53,9 @@ import com.repair.data.SolarCalendar
 import com.repair.data.TERMS
 import com.repair.data.Term
 import com.repair.data.gist
+import com.repair.data.focusText
 import com.repair.data.groupedFoods
+import com.repair.data.picks
 import com.repair.data.health
 import com.repair.data.nutriOf
 import com.repair.data.peakPurine
@@ -249,32 +251,52 @@ fun DetailScreen(
                 Spacer(Modifier.height(8.dp))
                 SectionHint("「宜」是这一节最该常吃的几样，「忌」是这段时间要少碰的做法与状态，不是绝对禁食。")
 
-                // 四、时令食材
-                DTitle("时令食材", "SEASONAL FOODS", skin.accent)
-                SectionHint("每味都写了功效、适合谁吃、谁要慎食。挑菜时先看「适合」，再对一眼「慎食」。")
-                term.groupedFoods().forEach { (cat, list) ->
-                    Row(
-                        modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(cat, style = MaterialTheme.typography.labelMedium, color = skin.deep)
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            "${list.size} 味",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = Ink3
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Box(
-                            Modifier
-                                .weight(1f)
-                                .height(1.dp)
-                                .background(LineSoft)
-                        )
+                // 四、这一节最该吃（按功效排序，不再平铺）
+                DTitle("这一节最该吃", "WHAT TO EAT", skin.accent)
+                FocusBanner(
+                    focus = term.focusText,
+                    accent = skin.accent,
+                    soft = skin.soft,
+                    deep = skin.deep
+                )
+                SectionHint(
+                    if (term.picks.isEmpty()) {
+                        "每味都写了功效、适合谁吃、谁要慎食。"
+                    } else {
+                        "排序的依据只有一条：这一节身体最容易出什么问题，就吃什么性味的东西。" +
+                            "「最该吃」正对「${term.focusText}」，往下依次放宽，最后一档点到为止。"
                     }
-                    list.forEach { food ->
-                        FoodRow(food, skin.accent)
-                        Spacer(Modifier.height(7.dp))
+                )
+
+                val picks = term.picks
+                if (picks.isEmpty()) {
+                    // 没有分档记录的节气，退回原来的分类视图
+                    term.groupedFoods().forEach { (cat, list) ->
+                        CatHead(cat, list.size, skin.deep)
+                        list.forEach { food ->
+                            FoodRow(food, skin.accent)
+                            Spacer(Modifier.height(7.dp))
+                        }
+                    }
+                } else {
+                    val tier1 = picks.filter { it.tier == 1 }
+                    val tier2 = picks.filter { it.tier == 2 }
+                    val tier3 = picks.filter { it.tier == 3 }
+                    val tierLabel = listOf(
+                        1 to "最该吃 · 与本节主攻正对",
+                        2 to "也该吃 · 当令平和，日常搭着吃",
+                        3 to "少量 · 性味与本节不合，点到为止"
+                    )
+                    listOf(tier1, tier2, tier3).forEachIndexed { ti, group ->
+                        if (group.isEmpty()) return@forEachIndexed
+                        CatHead(tierLabel[ti].second, group.size, skin.deep)
+                        group.forEach { p ->
+                            val food = term.foods.firstOrNull { it.name == p.name }
+                            if (food != null) {
+                                FoodRow(food, skin.accent, why = p.why, tier = p.tier)
+                                Spacer(Modifier.height(7.dp))
+                            }
+                        }
                     }
                 }
 
@@ -412,13 +434,92 @@ private fun QuoteBlock(quote: String, accent: Color) {
     }
 }
 
+/** 本节主攻方向，一行字先说清这一节该干什么 */
+@Composable
+private fun FocusBanner(focus: String, accent: Color, soft: Color, deep: Color) {
+    if (focus.isEmpty()) return
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 2.dp)
+            .clip(RoundedCornerShape(10.dp))
+            .background(soft.copy(alpha = 0.75f))
+            .padding(horizontal = 13.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text("本节主攻", style = MaterialTheme.typography.labelSmall, color = deep)
+        Spacer(Modifier.width(10.dp))
+        Text(focus, style = MaterialTheme.typography.titleSmall, color = accent)
+    }
+}
+
+/** 分档标题：左边档名，右边几味，后面一条细线拉满 */
+@Composable
+private fun CatHead(label: String, count: Int, deep: Color) {
+    Row(
+        modifier = Modifier.padding(top = 6.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = deep)
+        Spacer(Modifier.width(6.dp))
+        Text("$count 味", style = MaterialTheme.typography.labelSmall, color = Ink3)
+        Spacer(Modifier.width(10.dp))
+        Box(
+            Modifier
+                .weight(1f)
+                .height(1.dp)
+                .background(LineSoft)
+        )
+    }
+}
+
+/** 这一节为什么吃它。三档用三套轻重：一档着墨、二档轻描、三档警示 */
+@Composable
+private fun WhyLine(why: String, tier: Int, accent: Color) {
+    val color = when (tier) {
+        1 -> accent
+        3 -> Cinnabar.copy(alpha = 0.85f)
+        else -> Ink3
+    }
+    val bg = when (tier) {
+        1 -> accent.copy(alpha = 0.07f)
+        3 -> Cinnabar.copy(alpha = 0.05f)
+        else -> Color.Transparent
+    }
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(6.dp))
+            .background(bg)
+            .padding(
+                horizontal = if (tier == 2) 0.dp else 9.dp,
+                vertical = if (tier == 2) 0.dp else 7.dp
+            )
+    ) {
+        Text(
+            if (tier == 3) "少" else "故",
+            fontFamily = Serif,
+            fontSize = 10.sp,
+            color = color.copy(alpha = 0.8f),
+            modifier = Modifier.padding(top = 2.dp, end = 7.dp)
+        )
+        Text(
+            why,
+            style = MaterialTheme.typography.bodySmall,
+            color = if (tier == 2) Ink3 else color,
+            lineHeight = 18.sp,
+            textAlign = TextAlign.Justify
+        )
+    }
+}
+
 /**
  * 单味食材卡。
  * 结构：名称 + 性味 → 功效 → 适合谁 / 谁要慎食。
  * 「适合」「慎食」用方签标出来，比单写「宜」「忌」好认。
  */
 @Composable
-private fun FoodRow(food: Food, accent: Color) {
+private fun FoodRow(food: Food, accent: Color, why: String = "", tier: Int = 2) {
     PaperCard(modifier = Modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.padding(11.dp),
@@ -448,6 +549,10 @@ private fun FoodRow(food: Food, accent: Color) {
                             .border(1.dp, accent.copy(alpha = 0.35f), RoundedCornerShape(2.dp))
                             .padding(horizontal = 4.dp, vertical = 1.dp)
                     )
+                }
+                if (why.isNotEmpty()) {
+                    Spacer(Modifier.height(6.dp))
+                    WhyLine(why, tier, accent)
                 }
                 Spacer(Modifier.height(5.dp))
                 // 功效：稍深一档的字色，和下面的宜忌区分开
@@ -481,10 +586,6 @@ private fun FoodRow(food: Food, accent: Color) {
     }
 }
 
-/**
- * 食材的可查证数据条。
- * 数值全部来自国家卫健委食养指南，官方表未收录的食材不显示（不估算、不补值）。
- */
 /** 配料里出现这些词，就说明这道菜有隐性盐 */
 private val SALTY = listOf(
     "酱油", "生抽", "老抽", "豆瓣酱", "豆豉", "腐乳", "盐",
@@ -522,6 +623,10 @@ private fun SaltHint() {
     }
 }
 
+/**
+ * 食材的可查证数据条。
+ * 数值全部来自国家卫健委食养指南，官方表未收录的食材不显示（不估算、不补值）。
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun NutriLine(name: String, accent: Color) {
